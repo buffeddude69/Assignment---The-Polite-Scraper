@@ -1,12 +1,19 @@
 from pathlib import Path
 
 
-START_URL = "https://books.toscrape.com/catalogue/page-1.html"
+START_URL = (
+    "https://books.toscrape.com/"
+    "catalogue/page-1.html"
+)
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 CACHE_DIR = BASE_DIR / "cache"
 DETAIL_CACHE_DIR = CACHE_DIR / "details"
+
+OUTPUT_DIR = BASE_DIR / "output"
+BOOKS_FILE = OUTPUT_DIR / "books.json"
+ERRORS_FILE = OUTPUT_DIR / "errors.json"
 
 USER_AGENT = (
     "FlyRankInternshipA9/1.0 "

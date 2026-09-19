@@ -1,4 +1,5 @@
 from pathlib import Path
+import hashlib
 
 from config import CACHE_DIR, DETAIL_CACHE_DIR
 
@@ -7,12 +8,20 @@ def get_catalogue_cache_file(page_number: int) -> Path:
     return CACHE_DIR / f"catalogue-page-{page_number}.html"
 
 
-def get_detail_cache_file(slug: str) -> Path:
-    return DETAIL_CACHE_DIR / f"{slug}.html"
+def get_detail_cache_file(product_url: str) -> Path:
+    url_hash = hashlib.sha256(
+        product_url.encode("utf-8")
+    ).hexdigest()[:16]
+
+    return DETAIL_CACHE_DIR / f"{url_hash}.html"
 
 
-def get_detail_metadata_file(slug: str) -> Path:
-    return DETAIL_CACHE_DIR / f"{slug}.meta"
+def get_detail_metadata_file(product_url: str) -> Path:
+    url_hash = hashlib.sha256(
+        product_url.encode("utf-8")
+    ).hexdigest()[:16]
+
+    return DETAIL_CACHE_DIR / f"{url_hash}.meta"
 
 
 def read_cache(path: Path) -> str:

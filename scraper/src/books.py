@@ -19,10 +19,7 @@ def get_book_slug(product_url: str) -> str:
         .split("/")
     )
 
-    return path_parts[-1].replace(
-        ".html",
-        ""
-    )
+    return path_parts[-2]
 
 
 def extract_description(
@@ -152,16 +149,12 @@ def fetch_book(
     book: DiscoveredBook,
 ) -> RawBook | None:
 
-    slug = get_book_slug(
+    cache_file = get_detail_cache_file(
         book.product_url
     )
 
-    cache_file = get_detail_cache_file(
-        slug
-    )
-
     metadata_file = get_detail_metadata_file(
-        slug
+        book.product_url
     )
 
     result = fetch_url(
