@@ -1,10 +1,12 @@
 import json
+
 from pathlib import Path
 
 from config import (
     BOOKS_FILE,
     ERRORS_FILE,
     OUTPUT_DIR,
+    RUN_REPORT_FILE,
 )
 
 
@@ -31,15 +33,31 @@ def write_json(
         )
 
 
-def write_books(records: list[dict]) -> None:
+def write_books(
+    records: list[dict],
+) -> None:
+
     write_json(
         BOOKS_FILE,
         records,
     )
 
 
-def write_errors(errors: list[dict]) -> None:
+def write_errors(
+    errors: list[dict],
+) -> None:
+
     write_json(
         ERRORS_FILE,
         errors,
+    )
+
+
+def write_run_report(
+    report: dict,
+) -> None:
+
+    write_json(
+        RUN_REPORT_FILE,
+        report,
     )

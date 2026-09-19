@@ -10,6 +10,11 @@ from config import (
 from fetcher import fetch_url
 from models import DiscoveredBook
 
+from models import (
+    DiscoveredBook,
+    RunStats,
+)
+
 
 def parse_book_links(
     html: str,
@@ -67,7 +72,9 @@ def find_next_page(
     )
 
 
-def discover_books() -> list[DiscoveredBook]:
+def discover_books(
+        stats: RunStats,
+) -> list[DiscoveredBook]:
 
     current_url = START_URL
 
@@ -90,9 +97,15 @@ def discover_books() -> list[DiscoveredBook]:
         )
 
         if result is None:
+            stats.failed_html += 1
             break
 
-        html, _ = result
+        if result.cache_hit:
+            stats.cache_hits += 1
+        else:
+            stats.pages_html += 1
+
+        html = result.html
 
         catalogue_pages += 1
 

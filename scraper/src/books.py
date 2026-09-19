@@ -166,16 +166,15 @@ def fetch_book(
     if result is None:
         return None
 
-    html, fetched_at = result
-
     try:
         return parse_book(
-            html,
+            result.html,
             book,
-            fetched_at,
+            result.fetched_at,
         )
 
     except ValueError as exc:
+
         print(
             f"PARSE FAILED: {exc}"
         )
