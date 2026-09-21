@@ -1,31 +1,160 @@
-# Assignment---The-Polite-Scraper
-FlyRank Assignment
+# The Polite Scraper
 
-# Books to Scrape
+A small Python web scraper that collects book data from the Books to Scrape sandbox, cleans and validates the extracted data, and writes the results as JSON.
 
-A small Python web scraper built for practicing respectful and reliable web-data collection.
+The project is designed to demonstrate practical scraping habits: identifying the target, checking its robots file, using an honest user-agent, limiting requests, caching downloaded pages, validating data, and reporting failures without crashing the entire run.
 
 ## Target Classification
 
-**Site:** [Books to Scrape](https://books.toscrape.com/)
+**Target:** [Books to Scrape](https://books.toscrape.com/)
 
-**Why:** Books to Scrape is a fictional bookstore created as a safe sandbox for beginners to practice web scraping and for developers to validate scraping technologies.
+Books to Scrape is a sandbox site specifically provided for practicing web scraping.
 
-**Scope:** The scraper will collect data from the first 3 catalogue pages only. Each catalogue page contains up to 20 books, so the target is 60 books in total.
+**Scope:** The scraper follows the catalogue from page 1 through page 3 only, collecting 60 books in total.
 
-**Data collected:** Book title, price, availability, rating, and other fields required by the assignment.
+**Data collected:** Book title, canonical product URL, raw price text, normalized GBP price, availability, rating, description, source catalogue page, and fetch timestamp.
 
-**Why this is appropriate:** This target is appropriate because the site explicitly identifies itself as a scraping sandbox designed for scraping practice rather than a real commercial bookstore.
+This target is appropriate because it is explicitly provided as a scraping practice sandbox rather than a real production website.
 
-## Robots.txt Check
+## Python Lane
 
-Requested:
+This project uses **Python** with:
 
-`https://books.toscrape.com/robots.txt`
+* Requests for HTTP requests
+* Beautiful Soup for HTML parsing
+* Pydantic for schema validation
 
-Result:
+## Installation
 
-**no robots file found**
+From the repository root:
 
-The missing `robots.txt` file was recorded as a site observation, not as permission to scrape.
+```bash
+python -m pip install requests beautifulsoup4 pydantic
+```
 
+## Run
+
+Copy and paste:
+
+```bash
+python scraper/src/main.py
+```
+
+The scraper writes its results to:
+
+```text
+scraper/output/books.json
+scraper/output/run-report.json
+```
+
+## Record Schema
+
+Each valid book record has the following structure:
+
+| Field               | Type           | Description                                  |
+| ------------------- | -------------- | -------------------------------------------- |
+| `title`             | string         | Book title                                   |
+| `product_url`       | string         | Canonical HTTPS URL identifying the book     |
+| `price_text`        | string         | Original price text from the page            |
+| `price_gbp`         | number         | Normalized GBP price                         |
+| `availability_text` | string         | Original availability text                   |
+| `rating_text`       | string         | Original rating text                         |
+| `description`       | string or null | Book description when present                |
+| `source_page`       | string         | Catalogue page where the book was discovered |
+| `fetched_at`        | string         | UTC timestamp for the detail-page fetch      |
+
+Example:
+
+```json
+{
+  "title": "A Light in the Attic",
+  "product_url": "https://books.toscrape.com/catalogue/a-light-in-the-attic_1000/index.html",
+  "price_text": "£51.77",
+  "price_gbp": 51.77,
+  "availability_text": "In stock (22 available)",
+  "rating_text": "Three",
+  "description": "...",
+  "source_page": "https://books.toscrape.com/catalogue/page-1.html",
+  "fetched_at": "2026-09-21T..."
+}
+```
+
+The original raw values are preserved alongside normalized values. For example, `price_text` remains `"£51.77"` while `price_gbp` becomes the numeric value `51.77`.
+
+## Politeness Rules
+
+The scraper follows several rules to avoid unnecessary load on the target site:
+
+* **User-Agent:** Requests identify the scraper with a descriptive user-agent and repository link.
+* **Delay:** Real requests are separated by at least 0.5 seconds.
+* **Timeout:** Requests have a finite timeout and will not wait indefinitely.
+* **Caching:** Downloaded catalogue and detail pages are cached locally. Development reruns read cached pages instead of repeatedly requesting the live site.
+* **Status checks:** Only HTTP 200 responses are parsed as successful HTML.
+* **Retry behavior:** Timeouts and server errors are retried once; 403 and 404 responses are not retried.
+
+The local cache is excluded from Git with `cache/` in `.gitignore`.
+
+## Error Handling
+
+Pages are processed independently so that a failure on one page does not stop the entire run.
+
+Invalid records are written to:
+
+```text
+scraper/output/errors.json
+```
+
+The run summary is written to:
+
+```text
+scraper/output/run-report.json
+```
+
+The report includes:
+
+* start time
+* duration
+* pages fetched
+* cache hits
+* valid records
+* invalid records
+* failed pages
+
+## Sample Run Report
+
+The following is a real run-report generated by the scraper:
+
+```json
+{
+  "started_at": "2026-09-21T09:09:37.785034Z",
+  "duration_seconds": 4.809,
+  "pages_fetched": 0,
+  "cache_hits": 3,
+  "valid_records": 60,
+  "invalid_records": 0,
+  "failed_pages": 0
+}
+```
+
+## Swagger / API
+
+This project does not use a browser automation framework because the required data is already contained in the HTML returned by the server. A browser would add extra cost and complexity without providing additional information for this task.
+
+## Limitation
+
+The scraper depends on the current HTML structure of Books to Scrape. If the site's markup changes, selectors may need to be updated before the scraper can reliably extract the same fields.
+
+## Ethics
+
+When scraping websites, use an official API when one exists. Never bypass logins, paywalls, access controls, or blocks. Collect only the data you actually need, identify your scraper honestly, and make requests slowly enough to avoid unnecessary load on the server.
+
+## Project Output
+
+A successful run produces:
+
+```text
+scraper/output/books.json
+scraper/output/run-report.json
+```
+
+The expected successful dataset contains 60 unique book records.
